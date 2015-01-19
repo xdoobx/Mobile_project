@@ -157,6 +157,7 @@ public class Info {
 			ApiConstants.setPage(curPage+1);
 			URL url = new URL(ApiConstants.QUESTIONS);
 			HttpURLConnection request = (HttpURLConnection) url.openConnection();
+			request.addRequestProperty("key", ApiConstants.key);
 			request.connect();
 			//System.out.println(request.getContentEncoding());
 			InputStream jsonContent = new BufferedInputStream(new GZIPInputStream(request.getInputStream()));
@@ -172,31 +173,32 @@ public class Info {
 		//System.out.println("JsonReaderQuestions");
 		titles = new ArrayList<String>();
 		int count =0;
+		int pagePerFile = 3000/pageSize;
 		ArrayList<String> httpcontent = new ArrayList<String>();
 		JsonObject jsonObj,innerObj = null;
 		
 		String file_name_head = fDateDisplay+'-'+tDateDisplay;
 		file_name_head = file_name_head.replace('/', '_');
-		String qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/question/"+
-				file_name_head + "q[" + (curPage/100+1) + "].xls";
+		String qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
+				file_name_head + "q[" + (curPage/pagePerFile+1) + "].xls";
 		FileWriter qfile = new FileWriter(qfile_name, true);
 		
-		String afile_name = "D:/ASU2015Spring/Sharon/Stack_data/answer/"+
-				file_name_head + "a[" + (curPage/100+1) + "].xls";
+		String afile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
+				file_name_head + "a[" + (curPage/pagePerFile+1) + "].xls";
 		FileWriter afile = new FileWriter(afile_name, true);
 		try {
-			if(curPage % 100 == 0){
+			if(curPage % pagePerFile == 0){
 				qfile.close();
 				afile.close();
-				qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/question/"+
-						file_name_head + "q[" + (curPage/100+1) + "].xls";
+				qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
+						file_name_head + "q[" + (curPage/pagePerFile+1) + "].xls";
 				qfile = new FileWriter(qfile_name, true);
 				qfile.write("question_id\tcreation_date\tview_count\tis_answered\tanswer_count"
 						+ "\taccepted_answer_id\tscore\ttags\tlink\tasker_user_id\tasker_reputation"
 						+ "\tasker_user_type\tasker_accept_rate\tasker_display_name\ttitle\tcontent\n");
 				
-				afile_name = "D:/ASU2015Spring/Sharon/Stack_data/answer/"+
-						file_name_head + "a[" + (curPage/100+1) + "].xls";
+				afile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
+						file_name_head + "a[" + (curPage/pagePerFile+1) + "].xls";
 				afile = new FileWriter(afile_name, true);
 				afile.write("answer_id\tquestion_id\tcreation_date\tscore\tis_accepted\tanswer_user_id"
 						+ "\tanswer_reputation\tanswer_user_type\tanswer_accept_rate\tanswer_display_name\tcontent\n");
@@ -263,7 +265,7 @@ public class Info {
 		if(innerObj.has("tags")){
 			tags = (JsonArray)innerObj.get("tags");
 			for(int tag_count = 0; tag_count<tags.size(); ++tag_count){
-				tag = tag.concat(tags.get(tag_count).toString()+' ');
+				tag = tag.concat(tags.get(tag_count).toString().replace('"', ' ').trim()+' ');
 			}
 		}
 		
@@ -276,15 +278,15 @@ public class Info {
 		
 		if(innerObj.has("owner")){
 			owner = innerObj.getAsJsonObject("owner");
-			if(innerObj.has("user_id")){
+			if(owner.has("user_id")){
 				user_id = owner.get("user_id").toString();
-			}if(innerObj.has("reputation")){
+			}if(owner.has("reputation")){
 				reputation = owner.get("reputation").toString();
-			}if(innerObj.has("user_type")){
+			}if(owner.has("user_type")){
 				user_type = owner.get("user_type").toString();
-			}if(innerObj.has("accept_rate")){
+			}if(owner.has("accept_rate")){
 				accept_rate = owner.get("accept_rate").toString();
-			}if(innerObj.has("display_name")){
+			}if(owner.has("display_name")){
 				display_name = owner.get("display_name").toString().replace('"', ' ').trim();
 			}
 		}
@@ -323,7 +325,9 @@ public class Info {
 			ids = ids.concat(question_id.get(i));
 		}
 		while(!end){
-			String api_tail = "/answers?page="+aPage+"&pagesize="+aPageSize+"&order=desc&sort=votes&site=stackoverflow&filter=withbody";
+			String api_tail = "/answers?page="+aPage+"&pagesize="+aPageSize
+					+"&order=desc&sort=votes&site=stackoverflow&filter=withbody"
+					+ "&key=fA27AIi8HgzgbvBhE89UUg((";
 			URL url = new URL(api_head + ids + api_tail);
 			HttpURLConnection request = (HttpURLConnection) url.openConnection();
 			request.connect();
@@ -348,6 +352,7 @@ public class Info {
 			innerObj = (JsonObject) i.next();
 			parseAnswers(innerObj, afile);
 		}
+		afile.flush();
 		if(throttle_left <= 0){
 			for(int period = 0; period < 24; ++period){
 				System.out.println(" "+(24 - period)+"minutes to wait");
@@ -367,15 +372,15 @@ public class Info {
 		
 		if(innerObj.has("owner")){
 			owner = innerObj.getAsJsonObject("owner");
-			if(innerObj.has("user_id")){
+			if(owner.has("user_id")){
 				user_id = owner.get("user_id").toString();
-			}if(innerObj.has("reputation")){
+			}if(owner.has("reputation")){
 				reputation = owner.get("reputation").toString();
-			}if(innerObj.has("user_type")){
+			}if(owner.has("user_type")){
 				user_type = owner.get("user_type").toString();
-			}if(innerObj.has("accept_rate")){
+			}if(owner.has("accept_rate")){
 				accept_rate = owner.get("accept_rate").toString();
-			}if(innerObj.has("display_name")){
+			}if(owner.has("display_name")){
 				display_name = owner.get("display_name").toString().replace('"', ' ').trim();
 			}
 		}
