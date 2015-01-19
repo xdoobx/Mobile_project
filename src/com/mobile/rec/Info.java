@@ -40,6 +40,7 @@ public class Info {
 	private static ArrayList<String> list;
 	public static ArrayList<ArrayList<String>> figures;
 
+	private static String file_path = "C:/Users/lyihan/Yihan/Spring2015/Sharon/Stack_data/";
 	public static int curPage = 0;
 	public static int pageSize = 100;
 	private static boolean end = false;
@@ -163,7 +164,7 @@ public class Info {
 			InputStream jsonContent = new BufferedInputStream(new GZIPInputStream(request.getInputStream()));
 			value = JsonReaderQuestions(jsonContent);
 			++curPage;
-			Thread.sleep(2000);
+			Thread.sleep(150);
 		}
 		return value;
 	}
@@ -179,26 +180,22 @@ public class Info {
 		
 		String file_name_head = fDateDisplay+'-'+tDateDisplay;
 		file_name_head = file_name_head.replace('/', '_');
-		String qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
-				file_name_head + "q[" + (curPage/pagePerFile+1) + "].xls";
+		String qfile_name = file_path + file_name_head + "q[" + (curPage/pagePerFile+1) + "].xls";
 		FileWriter qfile = new FileWriter(qfile_name, true);
 		
-		String afile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
-				file_name_head + "a[" + (curPage/pagePerFile+1) + "].xls";
+		String afile_name = file_path + file_name_head + "a[" + (curPage/pagePerFile+1) + "].xls";
 		FileWriter afile = new FileWriter(afile_name, true);
 		try {
 			if(curPage % pagePerFile == 0){
 				qfile.close();
 				afile.close();
-				qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
-						file_name_head + "q[" + (curPage/pagePerFile+1) + "].xls";
+				qfile_name = file_path + file_name_head + "q[" + (curPage/pagePerFile+1) + "].xls";
 				qfile = new FileWriter(qfile_name, true);
 				qfile.write("question_id\tcreation_date\tview_count\tis_answered\tanswer_count"
 						+ "\taccepted_answer_id\tscore\ttags\tlink\tasker_user_id\tasker_reputation"
 						+ "\tasker_user_type\tasker_accept_rate\tasker_display_name\ttitle\tcontent\n");
 				
-				afile_name = "D:/ASU2015Spring/Sharon/Stack_data/"+
-						file_name_head + "a[" + (curPage/pagePerFile+1) + "].xls";
+				afile_name = file_path + file_name_head + "a[" + (curPage/pagePerFile+1) + "].xls";
 				afile = new FileWriter(afile_name, true);
 				afile.write("answer_id\tquestion_id\tcreation_date\tscore\tis_accepted\tanswer_user_id"
 						+ "\tanswer_reputation\tanswer_user_type\tanswer_accept_rate\tanswer_display_name\tcontent\n");
