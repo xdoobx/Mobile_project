@@ -41,7 +41,7 @@ public class Info {
 	public static ArrayList<ArrayList<String>> figures;
 
 	public static int curPage = 0;
-	public static int pageSize = 30;
+	public static int pageSize = 100;
 	private static boolean end = false;
 	
 	public static ArrayList<ArrayList<String>> getFigures() {
@@ -177,26 +177,26 @@ public class Info {
 		
 		String file_name_head = fDateDisplay+'-'+tDateDisplay;
 		file_name_head = file_name_head.replace('/', '_');
-		String qfile_name = "C:/Users/lyihan/Yihan/Spring2015/Sharon/Stack_data/question/"+
-				file_name_head + '[' + (curPage/100+1) + "].xls";
+		String qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/question/"+
+				file_name_head + "q[" + (curPage/100+1) + "].xls";
 		FileWriter qfile = new FileWriter(qfile_name, true);
 		
-		String afile_name = "C:/Users/lyihan/Yihan/Spring2015/Sharon/Stack_data/answer/"+
-				file_name_head + '[' + (curPage/100+1) + "].xls";
+		String afile_name = "D:/ASU2015Spring/Sharon/Stack_data/answer/"+
+				file_name_head + "a[" + (curPage/100+1) + "].xls";
 		FileWriter afile = new FileWriter(afile_name, true);
 		try {
 			if(curPage % 100 == 0){
 				qfile.close();
 				afile.close();
-				qfile_name = "C:/Users/lyihan/Yihan/Spring2015/Sharon/Stack_data/question/"+
-						file_name_head + '[' + (curPage/100+1) + "].xls";
+				qfile_name = "D:/ASU2015Spring/Sharon/Stack_data/question/"+
+						file_name_head + "q[" + (curPage/100+1) + "].xls";
 				qfile = new FileWriter(qfile_name, true);
 				qfile.write("question_id\tcreation_date\tview_count\tis_answered\tanswer_count"
 						+ "\taccepted_answer_id\tscore\ttags\tlink\tasker_user_id\tasker_reputation"
-						+ "\tasker_user_type\tasker_accept_rate\tasker_display_name\ttitle\ncontent\n");
+						+ "\tasker_user_type\tasker_accept_rate\tasker_display_name\ttitle\tcontent\n");
 				
-				afile_name = "C:/Users/lyihan/Yihan/Spring2015/Sharon/Stack_data/answer/"+
-						file_name_head + '[' + (curPage/100+1) + "].xls";
+				afile_name = "D:/ASU2015Spring/Sharon/Stack_data/answer/"+
+						file_name_head + "a[" + (curPage/100+1) + "].xls";
 				afile = new FileWriter(afile_name, true);
 				afile.write("answer_id\tquestion_id\tcreation_date\tscore\tis_accepted\tanswer_user_id"
 						+ "\tanswer_reputation\tanswer_user_type\tanswer_accept_rate\tanswer_display_name\tcontent\n");
@@ -222,8 +222,7 @@ public class Info {
 				String qID = parseQuestions(innerObj, qfile);
 				quesIDs.add(qID);
 			}
-			if(split[1] != null)
-				getAnswers(quesIDs, afile);
+			
 			if(!hasMore){
 				end = true;
 			}
@@ -239,6 +238,8 @@ public class Info {
 					Thread.sleep(60*60*1000);
 				}
 			}
+			if(split[1] != null)
+				getAnswers(quesIDs, afile);
 		} catch (JsonParseException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
@@ -262,7 +263,7 @@ public class Info {
 		if(innerObj.has("tags")){
 			tags = (JsonArray)innerObj.get("tags");
 			for(int tag_count = 0; tag_count<tags.size(); ++tag_count){
-				tag.concat(tags.get(tag_count).toString()+' ');
+				tag = tag.concat(tags.get(tag_count).toString()+' ');
 			}
 		}
 		
@@ -274,7 +275,7 @@ public class Info {
 		String display_name = "";
 		
 		if(innerObj.has("owner")){
-			owner = (JsonObject)innerObj.get("owner");
+			owner = innerObj.getAsJsonObject("owner");
 			if(innerObj.has("user_id")){
 				user_id = owner.get("user_id").toString();
 			}if(innerObj.has("reputation")){
@@ -310,19 +311,19 @@ public class Info {
 		
 	}
 	
-	public static void getAnswers(ArrayList<String> question_id, FileWriter afile) throws IOException{
+	public static void getAnswers(ArrayList<String> question_id, FileWriter afile) throws IOException, JsonParseException, InterruptedException{
 		int aPage = 1;
-		int aPageSize = 30;
+		int aPageSize = 100;
 		boolean end = false;
-		String api_head = "https://api.stackexchange.com/2.2/answers/";
+		String api_head = "https://api.stackexchange.com/2.2/questions/";
 		String ids = "";
 		for(int i=0; i<question_id.size(); ++i){
 			if(i != 0)
-				ids.concat(";");
-			ids.concat(question_id.get(i));
+				ids = ids.concat(";");
+			ids = ids.concat(question_id.get(i));
 		}
 		while(!end){
-			String api_tail = "?page="+aPage+"&pagesize="+aPageSize+"&order=desc&sort=activity&site=stackoverflow&filter=withbody";
+			String api_tail = "/answers?page="+aPage+"&pagesize="+aPageSize+"&order=desc&sort=votes&site=stackoverflow&filter=withbody";
 			URL url = new URL(api_head + ids + api_tail);
 			HttpURLConnection request = (HttpURLConnection) url.openConnection();
 			request.connect();
@@ -333,7 +334,7 @@ public class Info {
 		}
 	}
 	
-	public static boolean JsonReaderAnswers(InputStream jsonContent, FileWriter afile) throws JsonParseException, IOException{
+	public static boolean JsonReaderAnswers(InputStream jsonContent, FileWriter afile) throws JsonParseException, IOException, InterruptedException{
 		JsonParser parser = new JsonParser();
 		JsonObject jsonObj,innerObj = null;
 		jsonObj = (JsonObject)parser.parse(new InputStreamReader(
@@ -347,7 +348,12 @@ public class Info {
 			innerObj = (JsonObject) i.next();
 			parseAnswers(innerObj, afile);
 		}
-		
+		if(throttle_left <= 0){
+			for(int period = 0; period < 24; ++period){
+				System.out.println(" "+(24 - period)+"minutes to wait");
+				Thread.sleep(60*60*1000);
+			}
+		}
 		return !hasMore;
 	}
 	
@@ -360,7 +366,7 @@ public class Info {
 		String display_name = "";
 		
 		if(innerObj.has("owner")){
-			owner = (JsonObject)innerObj.get("owner");
+			owner = innerObj.getAsJsonObject("owner");
 			if(innerObj.has("user_id")){
 				user_id = owner.get("user_id").toString();
 			}if(innerObj.has("reputation")){
