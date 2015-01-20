@@ -164,7 +164,7 @@ public class Info {
 			InputStream jsonContent = new BufferedInputStream(new GZIPInputStream(request.getInputStream()));
 			value = JsonReaderQuestions(jsonContent);
 			++curPage;
-			Thread.sleep(150);
+			Thread.sleep(1000);
 		}
 		return value;
 	}
@@ -212,9 +212,9 @@ public class Info {
 			while(i.hasNext()){
 				innerObj = (JsonObject) i.next();
 				
-				quesLinks[count] = innerObj.get(LINK).toString().replace('"', ' ').trim();
+				quesLinks[count] = innerObj.get(LINK).toString();
 				//System.out.println(quesLinks[count]);
-				titles.add(innerObj.get(TITLE).toString().replace('"', ' ').trim());
+				titles.add(innerObj.get(TITLE).toString());
 				System.out.println("titles "+count+": "+titles.get(count));
 				count++;
 				
@@ -262,7 +262,7 @@ public class Info {
 		if(innerObj.has("tags")){
 			tags = (JsonArray)innerObj.get("tags");
 			for(int tag_count = 0; tag_count<tags.size(); ++tag_count){
-				tag = tag.concat(tags.get(tag_count).toString().replace('"', ' ').trim()+' ');
+				tag = tag.concat(tags.get(tag_count).toString()+' ');
 			}
 		}
 		
@@ -284,10 +284,10 @@ public class Info {
 			}if(owner.has("accept_rate")){
 				accept_rate = owner.get("accept_rate").toString();
 			}if(owner.has("display_name")){
-				display_name = owner.get("display_name").toString().replace('"', ' ').trim();
+				display_name = owner.get("display_name").toString();
 			}
 		}
-		String link = innerObj.get(LINK).toString().replace('"', ' ').trim();
+		String link = innerObj.get(LINK).toString();
 		
 		qfile.write(question_id+'\t'+
 				innerObj.get("creation_date").toString()+'\t'+
@@ -303,8 +303,8 @@ public class Info {
 				user_type+'\t'+
 				accept_rate+'\t'+
 				display_name+'\t'+
-				innerObj.get("title").toString().replace('"', ' ').trim()+'\t'+
-				innerObj.get("body").toString().replace('"', ' ').trim()+'\n');
+				innerObj.get("title").toString()+'\t'+
+				innerObj.get("body").toString()+'\n');
 		
 		return question_id;
 		
@@ -378,7 +378,7 @@ public class Info {
 			}if(owner.has("accept_rate")){
 				accept_rate = owner.get("accept_rate").toString();
 			}if(owner.has("display_name")){
-				display_name = owner.get("display_name").toString().replace('"', ' ').trim();
+				display_name = owner.get("display_name").toString();
 			}
 		}
 		
@@ -392,7 +392,7 @@ public class Info {
 				user_type+'\t'+
 				accept_rate+'\t'+
 				display_name+'\t'+
-				innerObj.get("body").toString().replace('"', ' ').trim()+'\n');	
+				innerObj.get("body").toString()+'\n');	
 	}
 	
 	public static void setAnswersList(List<String> answersList) {
