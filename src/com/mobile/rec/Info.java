@@ -262,7 +262,7 @@ public class Info {
 		if(innerObj.has("tags")){
 			tags = (JsonArray)innerObj.get("tags");
 			for(int tag_count = 0; tag_count<tags.size(); ++tag_count){
-				tag = tag.concat(tags.get(tag_count).toString()+' ');
+				tag = tag.concat(tags.get(tag_count).toString().replace("\"", "")+' ');
 			}
 		}
 		
